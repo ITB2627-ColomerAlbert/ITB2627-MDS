@@ -1,0 +1,468 @@
+﻿<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TA04 · Gestió d'Incidències TIC | Institut Tecnològic de Barcelona</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #090d16;
+  --bg-card: rgba(22, 30, 49, 0.75);
+  --border: rgba(94, 234, 212, 0.15);
+  --cyan: #38bdf8;
+  --teal: #2dd4bf;
+  --purple: #a855f7;
+  --rose: #fb7185;
+  --amber: #fbbf24;
+  --text: #f1f5f9;
+  --muted: #94a3b8;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(56, 189, 248, 0.12) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(168, 85, 247, 0.12) 0px, transparent 50%),
+    radial-gradient(at 50% 50%, rgba(45, 212, 191, 0.05) 0px, transparent 50%);
+  color: var(--text);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  height: 100vh;
+  overflow: hidden;
+  user-select: none;
+}
+
+.slide {
+  position: absolute;
+  inset: 0;
+  padding: 6vh 8vw;
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  opacity: 0;
+  transform: translateY(18px) scale(0.99);
+  transition: all 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.slide.active {
+  display: flex;
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--cyan);
+  width: fit-content;
+  margin-bottom: 1.5vh;
+}
+.badge-dot { width: 8px; height: 8px; background: var(--teal); border-radius: 50%; box-shadow: 0 0 10px var(--teal); }
+
+h1 {
+  font-size: 3.6rem;
+  font-weight: 800;
+  line-height: 1.15;
+  background: linear-gradient(135deg, #ffffff 30%, var(--cyan) 70%, var(--purple) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 2vh;
+}
+h2 {
+  font-size: 2.4rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 2.5vh;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+p.lead {
+  font-size: 1.25rem;
+  color: var(--muted);
+  max-width: 900px;
+  line-height: 1.6;
+  margin-bottom: 3.5vh;
+}
+
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(14px);
+  padding: 26px;
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  transition: transform 0.2s, border-color 0.2s;
+}
+.card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(56, 189, 248, 0.4);
+}
+.card-icon {
+  font-size: 2rem;
+  margin-bottom: 12px;
+}
+.card-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 8px;
+}
+.card-desc {
+  font-size: 0.95rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.stat-val {
+  font-size: 3rem;
+  font-weight: 800;
+  font-family: 'JetBrains Mono', monospace;
+  background: linear-gradient(135deg, var(--teal), var(--cyan));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+
+.pipeline {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 2vh;
+}
+.pipe-step {
+  flex: 1;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  padding: 22px 18px;
+  border-radius: 18px;
+  text-align: center;
+  position: relative;
+}
+.pipe-step b { display: block; font-size: 1.3rem; color: #fff; margin-bottom: 4px; }
+.pipe-step span { font-size: 0.85rem; color: var(--muted); }
+.pipe-arrow { font-size: 1.6rem; color: var(--cyan); }
+
+pre {
+  background: #040711;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 20px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: #cbd5e1;
+  overflow: hidden;
+}
+.tok-tag { color: var(--rose); font-weight: 600; }
+.tok-attr { color: var(--cyan); }
+.tok-val { color: var(--amber); }
+
+.controls {
+  position: fixed;
+  bottom: 24px;
+  right: 32px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border);
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.btn-nav {
+  background: transparent;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  padding: 4px 8px;
+  font-size: 1.1rem;
+  border-radius: 6px;
+}
+.btn-nav:hover { background: rgba(255, 255, 255, 0.1); }
+
+.progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--teal), var(--cyan), var(--purple));
+  transition: width 0.3s;
+}
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progress"></div>
+
+<!-- SLIDE 1 -->
+<section class="slide active">
+  <div class="badge"><span class="badge-dot"></span> TA04 · Llenguatges de Marques</div>
+  <h1>Gestió d'Incidències TIC<br>i Formats de Dades</h1>
+  <p class="lead">Cicle Formatiu de Grau Superior · ASIX · Institut Tecnològic de Barcelona<br>
+  Pipeline complet d'automatització: <b>Google Forms → CSV → XML → Python → JSON</b></p>
+  <div style="display:flex; gap: 30px; margin-top: 2vh;">
+    <div style="border-left: 3px solid var(--cyan); padding-left: 14px;">
+      <div style="font-size: 0.8rem; text-transform: uppercase; color: var(--muted);">Grup de Treball</div>
+      <div style="font-size: 1.15rem; font-weight: 700;">Grup G6 · Kevin Aguilar · Samire Laarej · Albert Colomer</div>
+    </div>
+    <div style="border-left: 3px solid var(--purple); padding-left: 14px;">
+      <div style="font-size: 0.8rem; text-transform: uppercase; color: var(--muted);">Durada Presentació</div>
+      <div style="font-size: 1.15rem; font-weight: 700;">4 minuts (Rellotge estricte)</div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 2 -->
+<section class="slide">
+  <div class="badge">Arquitectura del Projecte</div>
+  <h2>El Repte: Del Formulari al JSON</h2>
+  <p class="lead">Recollir el volum massiu d'incidències sol·licitat (4.000 registres) emprant formats oberts, sostenibles i garantint la privacitat segons la normativa RGPD.</p>
+  
+  <div class="pipeline">
+    <div class="pipe-step">
+      <div style="font-size: 1.8rem; margin-bottom: 6px;">📝</div>
+      <b>Google Forms</b>
+      <span>13+ preguntes clau</span>
+    </div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step">
+      <div style="font-size: 1.8rem; margin-bottom: 6px;">📑</div>
+      <b>CSV Estàndard</b>
+      <span>4.002 registres</span>
+    </div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step">
+      <div style="font-size: 1.8rem; margin-bottom: 6px;">🌲</div>
+      <b>XML Jeràrquic</b>
+      <span>Arbre semàntic</span>
+    </div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step">
+      <div style="font-size: 1.8rem; margin-bottom: 6px;">🐍</div>
+      <b>Python Engine</b>
+      <span>Neteja i KPIs</span>
+    </div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step">
+      <div style="font-size: 1.8rem; margin-bottom: 6px;">⚡</div>
+      <b>JSON Filtrada</b>
+      <span>3.963 ítems nets</span>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 3 -->
+<section class="slide">
+  <div class="badge">Fase 1 · Obtenció de Dades</div>
+  <h2>Disseny del Formulari d'Incidències</h2>
+  <div class="grid-3">
+    <div class="card">
+      <div class="card-icon">👤</div>
+      <div class="card-title">Traçabilitat & Usuari</div>
+      <div class="card-desc">Nom i cognoms, correu institucional validat (@itb.cat) i departament d'origen de la incidència.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🖥️</div>
+      <div class="card-title">Equip & Ubicació</div>
+      <div class="card-desc">Tipus d'equip (Ordinador, Portàtil, Projector, etc.), codi físic d'inventari (etiqueta format ABC-123) i aula.</div>
+    </div>
+    <div class="card">
+      <div class="card-icon">🚨</div>
+      <div class="card-title">Impacte & Severitat</div>
+      <div class="card-desc">Descripció tècnica, prioritat (Baixa/Mitjana/Alta/Crítica), disponibilitat de l'equip i escala d'afectació a classe (1-5).</div>
+    </div>
+  </div>
+  <div style="margin-top: 3vh; display: flex; gap: 20px;">
+    <div class="card" style="flex: 1; padding: 16px 24px;">
+      <div class="stat-val">4.002</div>
+      <div style="color: var(--muted); font-size: 0.9rem;">Incidències recollides al full de càlcul vinculat</div>
+    </div>
+    <div class="card" style="flex: 1; padding: 16px 24px;">
+      <div class="stat-val">13+</div>
+      <div style="color: var(--muted); font-size: 0.9rem;">Camps per incidència (mínim de 10 superat)</div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 4 -->
+<section class="slide">
+  <div class="badge">Fase 2 · Modelat de Dades</div>
+  <h2>Transformació CSV a XML Jeràrquic</h2>
+  <div class="grid-2">
+    <div>
+      <p class="lead" style="font-size: 1.05rem; margin-bottom: 2vh;">
+        La conversió aplana el CSV en una estructura semàntica amb <b>atributs per a metadades indexables</b> (id, codi) i <b>subelements per a entitats relacionades</b>.
+      </p>
+      <div class="card" style="margin-bottom: 12px; padding: 16px;">
+        <div style="font-weight: 700; color: var(--teal); margin-bottom: 4px;">🛡️ Compliment Estricte RGPD</div>
+        <div class="card-desc">Conversió realitzada amb codi intern autònom, sense exposar les dades dels alumnes a serveis comercials externs.</div>
+      </div>
+      <div class="card" style="padding: 16px;">
+        <div style="font-weight: 700; color: var(--cyan); margin-bottom: 4px;">🌱 Format Sostenible</div>
+        <div class="card-desc">XML obert, no propietari, en codificació UTF-8 estàndard que garanteix conservació a llarg termini.</div>
+      </div>
+    </div>
+    <div>
+      <pre><code>&lt;<span class="tok-tag">incidencia</span> <span class="tok-attr">id</span>=<span class="tok-val">"INC-00001"</span>&gt;
+  &lt;<span class="tok-tag">data_registre</span>&gt;11/5/2026 20:45:38&lt;/<span class="tok-tag">data_registre</span>&gt;
+  &lt;<span class="tok-tag">informador</span>&gt;
+    &lt;<span class="tok-tag">nom</span>&gt;Kevin Aguilar Claure&lt;/<span class="tok-tag">nom</span>&gt;
+    &lt;<span class="tok-tag">email</span>&gt;kw843234@gmail.com&lt;/<span class="tok-tag">email</span>&gt;
+    &lt;<span class="tok-tag">departament</span>&gt;Direcció&lt;/<span class="tok-tag">departament</span>&gt;
+  &lt;/<span class="tok-tag">informador</span>&gt;
+  &lt;<span class="tok-tag">equip</span> <span class="tok-attr">codi</span>=<span class="tok-val">"PRO-312"</span>&gt;
+    &lt;<span class="tok-tag">tipus</span>&gt;Ordinador&lt;/<span class="tok-tag">tipus</span>&gt;
+    &lt;<span class="tok-tag">categoria</span>&gt;Hardware&lt;/<span class="tok-tag">categoria</span>&gt;
+    &lt;<span class="tok-tag">ubicacio</span>&gt;Aula 305&lt;/<span class="tok-tag">ubicacio</span>&gt;
+  &lt;/<span class="tok-tag">equip</span>&gt;
+  &lt;<span class="tok-tag">descripcio</span>&gt;No funciona Guest Additions&lt;/<span class="tok-tag">descripcio</span>&gt;
+  &lt;<span class="tok-tag">prioritat</span>&gt;Crítica&lt;/<span class="tok-tag">prioritat</span>&gt;
+&lt;/<span class="tok-tag">incidencia</span>&gt;</code></pre>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 5 -->
+<section class="slide">
+  <div class="badge">Fase 3 · Analítica & Neteja</div>
+  <h2>Dades vs. Informació: El Filtratge</h2>
+  <div class="grid-2">
+    <div class="card">
+      <div style="font-size: 1.4rem; font-weight: 800; color: var(--rose); margin-bottom: 8px;">Dada (Bruta)</div>
+      <p class="card-desc" style="font-size: 1rem; margin-bottom: 14px;">
+        Un valor aïllat sense context que per si sol no permet prendre decisions operatives ni estratègiques.
+      </p>
+      <div style="background: rgba(251, 113, 133, 0.1); border-left: 3px solid var(--rose); padding: 10px; font-family: monospace; font-size: 0.9rem;">
+        "Aula 305", "Projector", "11/5/2064"
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="font-size: 1.4rem; font-weight: 800; color: var(--teal); margin-bottom: 8px;">Informació (Processada)</div>
+      <p class="card-desc" style="font-size: 1rem; margin-bottom: 14px;">
+        Dades netejades, validades i contextualitzades per resoldre problemes reals a l'aula o empresa.
+      </p>
+      <div style="background: rgba(45, 212, 191, 0.1); border-left: 3px solid var(--teal); padding: 10px; font-family: monospace; font-size: 0.9rem;">
+        "El 25% dels projectors a l'Aula 305 fallen per làmpada esgotada: cal reposició preventiva."
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top: 2.5vh; background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 20px;">
+    <div style="font-weight: 700; margin-bottom: 10px;">Filtres de Qualitat aplicats al programa Python:</div>
+    <div class="grid-3" style="gap: 12px;">
+      <div style="color: var(--rose); font-size: 0.95rem;">✘ Anomalia temporal (Any 2064 descartat)</div>
+      <div style="color: var(--rose); font-size: 0.95rem;">✘ Registres amb descripció buida</div>
+      <div style="color: var(--rose); font-size: 0.95rem;">✘ Formats d'email erronis i IDs duplicats</div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 6 -->
+<section class="slide">
+  <div class="badge">Fase 4 · Persistència</div>
+  <h2>Emmagatzematge en JSON</h2>
+  <div class="grid-2">
+    <div>
+      <p class="lead" style="font-size: 1.05rem;">
+        La informació que ha superat tots els filtres de qualitat es bolca automàticament a <b>incidencies.json</b>.
+      </p>
+      <div class="card" style="margin-bottom: 14px;">
+        <div class="card-title">Comprovació d'existència prèvia:</div>
+        <div class="card-desc">
+          1. <b>Si no existeix</b> → Es crea automàticament.<br>
+          2. <b>Si ja existeix</b> → Pregunta per consola:<br>
+          &nbsp;&nbsp;• <i>[1] Sobreescriure'l</i> completament.<br>
+          &nbsp;&nbsp;• <i>[2] Afegir només noves</i> incidències verificant la clau ID per impedir duplicats.
+        </div>
+      </div>
+    </div>
+    <div class="card" style="display: flex; flex-direction: column; justify-content: center; text-align: center; padding: 30px;">
+      <div class="stat-val" style="font-size: 4rem;">3.963</div>
+      <div style="font-size: 1.2rem; font-weight: 700; color: #fff;">Incidències Vàlides Emmagatzemades</div>
+      <div style="color: var(--muted); margin-top: 8px;">(39 anomalies i valors erronis descartats amb èxit)</div>
+    </div>
+  </div>
+</section>
+
+<!-- SLIDE 7 -->
+<section class="slide" style="text-align: center; align-items: center;">
+  <div class="badge"><span class="badge-dot"></span> Conclusions & Rúbrica</div>
+  <h1 style="font-size: 3.2rem;">Objectius Assolits al 100%</h1>
+  <p class="lead" style="margin-inline: auto;">
+    Pipeline sòlid, documentat, alineat amb les competències transversals d'autonomia i treball en equip, i preparat per al lliurament oficial.
+  </p>
+  <div style="display: flex; gap: 20px; justify-content: center; margin-top: 2vh;">
+    <div class="card" style="min-width: 220px; padding: 20px;">
+      <div style="font-size: 1.8rem; margin-bottom: 6px;">🎯</div>
+      <div style="font-weight: 700;">4.000+ Dades</div>
+      <div style="color: var(--muted); font-size: 0.85rem;">Massa crítica d'estudi</div>
+    </div>
+    <div class="card" style="min-width: 220px; padding: 20px;">
+      <div style="font-size: 1.8rem; margin-bottom: 6px;">⚡</div>
+      <div style="font-weight: 700;">Python CLI</div>
+      <div style="color: var(--muted); font-size: 0.85rem;">Colors ANSI i informes</div>
+    </div>
+    <div class="card" style="min-width: 220px; padding: 20px;">
+      <div style="font-size: 1.8rem; margin-bottom: 6px;">📦</div>
+      <div style="font-weight: 700;">Lliurament ZIP</div>
+      <div style="color: var(--muted); font-size: 0.85rem;">Nomenclatura estàndard</div>
+    </div>
+  </div>
+  <div style="margin-top: 4vh; color: var(--muted); font-size: 1.1rem;">
+    Moltes gràcies per la vostra atenció · <b>Torn de preguntes</b> 🙋
+  </div>
+</section>
+
+<!-- CONTROLS -->
+<div class="controls">
+  <button class="btn-nav" id="btnPrev">←</button>
+  <span id="slideIndicator">1 / 7</span>
+  <button class="btn-nav" id="btnNext">→</button>
+</div>
+
+<script>
+const slides = document.querySelectorAll('.slide');
+const progress = document.getElementById('progress');
+const indicator = document.getElementById('slideIndicator');
+let current = 0;
+
+function updateSlide(idx) {
+  slides[current].classList.remove('active');
+  current = (idx + slides.length) % slides.length;
+  slides[current].classList.add('active');
+  progress.style.width = ((current + 1) / slides.length * 100) + '%';
+  indicator.textContent = (current + 1) + ' / ' + slides.length;
+}
+
+document.getElementById('btnNext').addEventListener('click', () => updateSlide(current + 1));
+document.getElementById('btnPrev').addEventListener('click', () => updateSlide(current - 1));
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') updateSlide(current + 1);
+  if (e.key === 'ArrowLeft' || e.key === 'PageUp') updateSlide(current - 1);
+});
+updateSlide(0);
+</script>
+</body>
+</html>
